@@ -3,18 +3,14 @@ go = "1.27.1"
 "aqua:tinygo-org/tinygo" = "0.42.0"
 "aqua:rhysd/actionlint" = "1.7.12"
 
-[tasks.run]
-description = "Run the zero-kb02 emulator"
-run = "go run ."
-
 [tasks.test]
 description = "Run Go tests for the simulator"
-run = "go test . ./simulator/... ./machine/... ./driver/... ./internal/..."
+run = "go test ./simulator/... ./machine/... ./driver/... ./internal/..."
 
 [tasks.lint]
 description = "Run static and repository checks"
 run = [
-  "go vet . ./simulator/... ./machine/... ./driver/... ./internal/...",
+  "go vet ./simulator/... ./machine/... ./driver/... ./internal/...",
   "go mod tidy -diff",
   "actionlint",
 ]
@@ -34,13 +30,6 @@ env = {
 run = [
   "mkdir -p build",
   "go test ./internal/emulator -count=1",
-]
-
-[tasks.build]
-description = "Build the desktop emulator"
-run = [
-  "mkdir -p build",
-  "go build -o build/zero-kb02 .",
 ]
 
 [tasks.build-tinygo]

@@ -9,7 +9,6 @@
 *.dylib
 *.elf
 *.uf2
-/rp2040-simulator
 /build/
 
 # Test binaries and artifacts
