@@ -11,6 +11,7 @@ run = "go test ./simulator/... ./machine/... ./driver/... ./internal/..."
 description = "Run static and repository checks"
 run = [
   "go vet ./simulator/... ./machine/... ./driver/... ./internal/...",
+  "go run ./internal/tabletestlint ./simulator/... ./machine/... ./driver/... ./internal/...",
   "go mod tidy -diff",
   "actionlint",
 ]
