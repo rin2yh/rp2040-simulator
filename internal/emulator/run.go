@@ -33,7 +33,6 @@ type game struct {
 	bootHeld              bool
 	resetFlash            int
 	hint                  string
-	testUpdate            func(*game) error
 }
 
 // Run owns the main thread and accepts device-level updates over local RPC.
@@ -156,9 +155,6 @@ func (g *game) Update() error {
 	g.updateHint(point)
 	if g.bootloader {
 		return nil
-	}
-	if g.testUpdate != nil {
-		return g.testUpdate(g)
 	}
 	return nil
 }

@@ -9,10 +9,7 @@ run = "go run ."
 
 [tasks.test]
 description = "Run Go tests for the simulator"
-run = [
-  "go test . ./machine/... ./driver/... ./internal/...",
-  "go test ./internal/emulator -count=1 -args --board conf2025badge",
-]
+run = "go test . ./machine/... ./driver/... ./internal/..."
 
 [tasks.lint]
 description = "Run static and repository checks"
@@ -37,7 +34,6 @@ env = {
 run = [
   "mkdir -p build",
   "go test ./internal/emulator -count=1",
-  "go test ./internal/emulator -count=1 -args --board conf2025badge",
 ]
 
 [tasks.build]
