@@ -16,7 +16,9 @@ go get github.com/rin2yh/rp2040-simulator@latest
 
 PCとTinyGoで共通に使えるpackageと最小構成のアプリは、[LED blink example](examples/led-blink)を参照してください。
 
-conf2025badgeは `RP2040_SIMULATOR_BOARD=conf2025badge go run .` で選択します。アプリからの自動起動にも同じ環境変数を使います。キーLEDは `machine.GPIO0` に2個接続し、TinyGoでは `-target=xiao-rp2040` を指定します。ブザーの音声出力は未対応です。
+conf2025badgeは `RP2040_SIMULATOR_BOARD=conf2025badge go run .` で選択します。アプリからの自動起動にも同じ環境変数を使います。キーLEDは `machine.GPIO0` に2個、ブザーは `machine.GPIO1` に接続し、TinyGoでは `-target=xiao-rp2040` を指定します。
+
+ブザーは [buzzer example](examples/buzzer/main.go) のように `driver/buzzer` の `New`、`SetFrequency`、`Stop` で操作します。PCでは `RP2040_SIMULATOR_BOARD=conf2025badge go run ./examples/buzzer` で音を確認できます。
 
 ## Development
 

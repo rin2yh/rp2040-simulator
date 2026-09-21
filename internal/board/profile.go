@@ -27,6 +27,7 @@ type Profile struct {
 	Name                        string
 	DisplayWidth, DisplayHeight int16
 	LEDCount                    int
+	HasBuzzer                   bool
 	View                        View
 }
 

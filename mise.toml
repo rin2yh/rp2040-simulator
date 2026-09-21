@@ -52,6 +52,11 @@ run = [
   "go build -o build/zero-kb02 .",
 ]
 
+[tasks.test-audio]
+description = "Verify buzzer playback on a desktop with audio output"
+env = { RP2040_SIMULATOR_BOARD = "conf2025badge", EMULATOR_TEST_AUDIO = "1" }
+run = "go test ./internal/emulator -count=1"
+
 [tasks.build-tinygo]
 description = "Build the TinyGo compatibility check"
 run = [

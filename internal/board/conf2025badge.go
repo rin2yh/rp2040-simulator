@@ -14,7 +14,7 @@ import (
 // XIAO RP2040; SSD1306 128x64; two SK6812 key LEDs on GPIO0.
 func Conf2025Badge() Profile {
 	return Profile{
-		Name: "conf2025badge", DisplayWidth: 128, DisplayHeight: 64, LEDCount: 2,
+		Name: "conf2025badge", DisplayWidth: 128, DisplayHeight: 64, LEDCount: 2, HasBuzzer: true,
 		View: View{
 			Width: 890, Height: 690,
 			Display: image.Rect(371, 185, 551, 275),
@@ -56,7 +56,7 @@ func drawConf2025Badge(dst *ebiten.Image) {
 	Label(dst, "GND  VDD  SCK  SDA", 378, 166, 10, rgb(185, 203, 198))
 	Label(dst, "TinyGo Conference 2025", 300, 313, 22, rgb(209, 226, 215))
 	rounded(dst, 286, 356, 321, 191, 13, rgb(215, 231, 220))
-	// The buzzer is shown as a physical part; audio is not simulated.
+	// Buzzer below the joystick.
 	vector.FillCircle(dst, 208, 477, 39, rgb(13, 21, 24), true)
 	vector.FillCircle(dst, 208, 470, 34, rgb(47, 59, 62), true)
 	vector.FillCircle(dst, 208, 465, 5, rgb(9, 15, 18), true)

@@ -12,3 +12,7 @@ const (
 type WriteLEDsArgs struct {
 	Colors []color.RGBA
 }
+
+type BuzzerArgs struct {
+	Frequency uint32
+}

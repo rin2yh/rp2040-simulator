@@ -14,6 +14,7 @@ import (
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/rin2yh/rp2040-simulator/internal/board"
+	"github.com/rin2yh/rp2040-simulator/internal/bridge"
 )
 
 var guiError error
@@ -88,6 +89,11 @@ func checkGUI() error {
 			return finished
 		}
 		if draws != lastStep {
+			if os.Getenv("EMULATOR_TEST_AUDIO") == "1" {
+				if err := checkBuzzerAudio(g, draws); err != nil {
+					return err
+				}
+			}
 			switch draws {
 			case 1:
 				g.encoder.Rotate(3)
@@ -125,6 +131,35 @@ func checkGUI() error {
 		return fmt.Errorf("GUI exited before check completed: %v", err)
 	}
 	return captureError
+}
+
+// Opt in on a desktop with an audio output; ordinary tests check PCM and RPC
+// without requiring an audio device or making sound.
+func checkBuzzerAudio(g *game, step int) error {
+	var hz uint32
+	switch step {
+	case 1:
+		hz = 440
+	case 2:
+		hz = 880
+	case 3:
+	default:
+		return nil
+	}
+	if err := g.buzzer.SetFrequency(&bridge.BuzzerArgs{Frequency: hz}, &struct{}{}); err != nil {
+		return err
+	}
+	if err := g.updateBuzzerAudio(); err != nil {
+		return err
+	}
+	if hz == 0 {
+		if g.buzzerPlayer != nil {
+			return errors.New("buzzer player survived Stop")
+		}
+	} else if g.buzzerPlayer == nil || !g.buzzerPlayer.IsPlaying() || g.buzzerFrequency != hz {
+		return errors.New("buzzer audio did not start or change frequency")
+	}
+	return nil
 }
 
 func checkBoardGolden(screen *ebiten.Image, name string) error {

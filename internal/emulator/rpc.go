@@ -28,9 +28,12 @@ func (s *ledService) WriteColors(args *bridge.WriteLEDsArgs, _ *struct{}) error 
 	return s.leds.Display()
 }
 
-func startRPC(leds *LEDs) (net.Listener, error) {
+func startRPC(leds *LEDs, buzzer *Buzzer) (net.Listener, error) {
 	server := rpc.NewServer()
 	if err := server.RegisterName("LEDs", &ledService{leds: leds}); err != nil {
+		return nil, err
+	}
+	if err := server.RegisterName("Buzzer", buzzer); err != nil {
 		return nil, err
 	}
 	listener, err := net.Listen("tcp", bridge.Address)
