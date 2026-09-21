@@ -1,6 +1,6 @@
 //go:build !tinygo
 
-// Package machine exposes zero-kb02 pins on desktop and TinyGo builds.
+// Package machine exposes supported board pins on desktop and TinyGo builds.
 package machine
 
 import (
@@ -28,6 +28,9 @@ func (Pin) Configure(PinConfig) {}
 // GPIO1 drives the 12 WS2812 LEDs beneath the zero-kb02 keys.
 const GPIO1 Pin = 1
 
+// GPIO0 drives the two conf2025badge key LEDs.
+const GPIO0 Pin = 0
+
 func init() {
 	handled, err := runEmulatorProcess(os.Getenv, emulator.Run)
 	if !handled {
@@ -44,5 +47,13 @@ func runEmulatorProcess(getenv func(string) string, run func(board.Profile) erro
 	if getenv(bridge.EmulatorProcess) != "1" {
 		return false, nil
 	}
-	return true, run(board.ZeroKB02())
+	name := getenv(bridge.EmulatorBoard)
+	if name == "" {
+		name = "zero-kb02"
+	}
+	profile, err := board.Lookup(name)
+	if err != nil {
+		return true, err
+	}
+	return true, run(profile)
 }

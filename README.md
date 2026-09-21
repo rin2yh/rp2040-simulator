@@ -1,6 +1,6 @@
 # rp2040-simulator
 
-RP2040ボード向けTinyGoアプリを、実機へ書き込まずにPCで動かすためのエミュレータです。現在はzero-kb02に対応しています。デスクトップではローカルRPC、TinyGoでは実ドライバへ接続します。
+RP2040ボード向けTinyGoアプリを、実機へ書き込まずにPCで動かすためのエミュレータです。zero-kb02とconf2025badgeに対応しています。デスクトップではローカルRPC、TinyGoでは実ドライバへ接続します。
 
 ![zero-kb02 emulator](internal/board/testdata/zero-kb02.png)
 
@@ -12,6 +12,16 @@ Go moduleをアプリへ追加します。
 
 ```sh
 go get github.com/rin2yh/rp2040-simulator@latest
+```
+
+zero-kb02以外を使う場合は、デバイスを使う前に対象ボードを設定します。`Configure`を呼ばない場合はzero-kb02を使用します。
+
+```go
+if err := simulator.Configure(simulator.Config{
+	Board: simulator.BoardConf2025Badge,
+}); err != nil {
+	log.Fatal(err)
+}
 ```
 
 PCとTinyGoで共通に使えるpackageと最小構成のアプリは、[LED blink example](examples/led-blink)を参照してください。

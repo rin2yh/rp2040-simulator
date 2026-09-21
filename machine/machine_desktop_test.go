@@ -44,3 +44,29 @@ func TestRunEmulatorProcessStartsZeroKB02(t *testing.T) {
 		t.Fatalf("error = %v, want %v", err, want)
 	}
 }
+
+func TestRunEmulatorProcessSelectsBoard(t *testing.T) {
+	for _, name := range []string{"conf2025badge", "unknown"} {
+		t.Run(name, func(t *testing.T) {
+			called := false
+			handled, err := runEmulatorProcess(func(key string) string {
+				if key == bridge.EmulatorProcess {
+					return "1"
+				}
+				if key == bridge.EmulatorBoard {
+					return name
+				}
+				return ""
+			}, func(p board.Profile) error {
+				called = true
+				if p.Name != name || p.LEDCount != 2 || len(p.View.Keys) != 2 {
+					t.Fatalf("unexpected profile: %+v", p)
+				}
+				return nil
+			})
+			if !handled || (name == "unknown") != (err != nil) || called != (name == "conf2025badge") {
+				t.Fatalf("handled=%v called=%v error=%v", handled, called, err)
+			}
+		})
+	}
+}

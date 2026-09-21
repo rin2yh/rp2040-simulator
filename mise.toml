@@ -9,12 +9,12 @@ run = "go run ."
 
 [tasks.test]
 description = "Run Go tests for the simulator"
-run = "go test . ./machine/... ./driver/... ./internal/..."
+run = "go test . ./simulator/... ./machine/... ./driver/... ./internal/..."
 
 [tasks.lint]
 description = "Run static and repository checks"
 run = [
-  "go vet . ./machine/... ./driver/... ./internal/...",
+  "go vet . ./simulator/... ./machine/... ./driver/... ./internal/...",
   "go mod tidy -diff",
   "actionlint",
 ]
@@ -48,4 +48,5 @@ description = "Build the TinyGo compatibility check"
 run = [
   "mkdir -p build",
   "tinygo build -target=waveshare-rp2040-zero -o build/tinygo-check.uf2 ./testdata/tinygo",
+  "tinygo build -target=xiao-rp2040 -o build/tinygo-conf2025badge-check.uf2 ./testdata/tinygo",
 ]

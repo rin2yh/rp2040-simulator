@@ -21,6 +21,7 @@ type game struct {
 	view                  board.View
 	display               *Display
 	leds                  *LEDs
+	buzzer                *Buzzer
 	encoder               Encoder
 	oled                  *ebiten.Image
 	pixels                []byte
@@ -32,7 +33,6 @@ type game struct {
 	bootHeld              bool
 	resetFlash            int
 	hint                  string
-	testUpdate            func(*game) error
 }
 
 // Run owns the main thread and accepts device-level updates over local RPC.
@@ -45,11 +45,12 @@ func Run(profile board.Profile) error {
 }
 
 func run(g *game) error {
-	listener, err := startRPC(g.leds)
+	listener, err := startRPC(g.leds, g.buzzer)
 	if err != nil {
 		return fmt.Errorf("start emulator RPC server: %w", err)
 	}
 	defer listener.Close()
+	defer g.buzzer.closeAudio()
 	w, h := g.Layout(0, 0)
 	ebiten.SetWindowSize(w, h)
 	ebiten.SetWindowTitle(g.profile.Name + " | TinyGo device emulator")
@@ -76,6 +77,9 @@ func newGame(profile board.Profile) (*game, error) {
 	if profile.LEDCount > 0 {
 		g.leds = NewLEDs(profile.LEDCount)
 	}
+	if profile.HasBuzzer {
+		g.buzzer = &Buzzer{}
+	}
 	g.buttons = make([]Button, len(view.Keys))
 	bounds := make([]image.Rectangle, len(g.buttons))
 	for i := range g.buttons {
@@ -87,6 +91,7 @@ func newGame(profile board.Profile) (*game, error) {
 }
 
 func (g *game) restart(bootloader bool) error {
+	g.buzzer.reset(bootloader)
 	g.bootloader, g.bootArmed, g.zoom = bootloader, false, false
 	g.encoder = Encoder{}
 	g.joystick = Joystick{}
@@ -108,6 +113,9 @@ func (g *game) restart(bootloader bool) error {
 }
 
 func (g *game) Update() error {
+	if err := g.buzzer.updateAudio(); err != nil {
+		return err
+	}
 	if g.resetFlash > 0 {
 		g.resetFlash--
 	}
@@ -147,9 +155,6 @@ func (g *game) Update() error {
 	g.updateHint(point)
 	if g.bootloader {
 		return nil
-	}
-	if g.testUpdate != nil {
-		return g.testUpdate(g)
 	}
 	return nil
 }

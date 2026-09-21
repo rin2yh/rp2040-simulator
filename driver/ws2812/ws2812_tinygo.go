@@ -1,4 +1,4 @@
-//go:build tinygo && waveshare_rp2040_zero
+//go:build tinygo && (waveshare_rp2040_zero || xiao_rp2040)
 
 package ws2812
 

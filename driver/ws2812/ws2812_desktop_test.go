@@ -35,6 +35,9 @@ func TestWriteColorsUsesDeviceRPC(t *testing.T) {
 	if err := device.WriteColors(want); err != nil {
 		t.Fatal(err)
 	}
+	if err := NewWS2812(machine.GPIO0).WriteColors(want); err != nil {
+		t.Fatal(err)
+	}
 }
 
 func TestWriteColorsRejectsUnknownPin(t *testing.T) {

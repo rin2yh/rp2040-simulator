@@ -19,7 +19,8 @@ func ZeroKB02() Profile {
 		Display: image.Rect(440, 197, 606, 280),
 		Encoder: image.Pt(684, 213), EncoderRadius: 47,
 		Joystick: image.Pt(215, 211), JoystickRadius: 43,
-		Boot: image.Rect(329, 247, 359, 279), Reset: image.Rect(386, 247, 416, 279),
+		JoystickLabel: image.Pt(156, 322),
+		Boot:          image.Rect(329, 247, 359, 279), Reset: image.Rect(386, 247, 416, 279),
 		DrawBody: drawBody,
 	}
 	codes := []ebiten.Key{ebiten.KeyQ, ebiten.KeyW, ebiten.KeyE, ebiten.KeyR, ebiten.KeyA, ebiten.KeyS, ebiten.KeyD, ebiten.KeyF, ebiten.KeyZ, ebiten.KeyX, ebiten.KeyC, ebiten.KeyV}

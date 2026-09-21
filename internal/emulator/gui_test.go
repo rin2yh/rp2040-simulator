@@ -18,6 +18,39 @@ import (
 
 var guiError error
 
+var errGUICheckFinished = errors.New("GUI check finished")
+
+type guiCheck struct {
+	profiles []board.Profile
+	rendered bool
+	err      error
+}
+
+func (c *guiCheck) Update() error {
+	if c.rendered {
+		return errGUICheckFinished
+	}
+	return nil
+}
+
+func (c *guiCheck) Draw(screen *ebiten.Image) {
+	c.rendered = true
+	for _, profile := range c.profiles {
+		actual, err := renderBoard(profile)
+		if err != nil {
+			c.err = fmt.Errorf("render %s: %w", profile.Name, err)
+			return
+		}
+		if err := checkBoardRendering(actual, profile); err != nil {
+			c.err = fmt.Errorf("check %s: %w", profile.Name, err)
+			return
+		}
+		screen.DrawImage(actual, nil)
+	}
+}
+
+func (c *guiCheck) Layout(_, _ int) (int, int) { return 890, 860 }
+
 // Ebitengine must run on the main goroutine, hence TestMain. Enable explicitly
 // with the gui build tag on a desktop or under Xvfb. Ordinary tests remain headless.
 func TestMain(m *testing.M) {
@@ -32,96 +65,70 @@ func TestGUIRenderingMatchesBoardGolden(t *testing.T) {
 }
 
 func checkGUI() error {
-	profile := board.ZeroKB02()
-	view := profile.View
-	drawBody := view.DrawBody
-	draws, lastStep := 0, -1
-	var captureError error
-	finished := errors.New("GUI check finished")
-	// Preserve the previous completed frame so the next DrawBody can inspect
-	// the actual composed screen before it is painted over.
-	ebiten.SetScreenClearedEveryFrame(false)
-	defer ebiten.SetScreenClearedEveryFrame(true)
-	view.DrawBody = func(screen *ebiten.Image) {
-		if draws == 5 {
-			lit := 0
-			for y := view.Display.Min.Y; y < view.Display.Max.Y; y++ {
-				for x := view.Display.Min.X; x < view.Display.Max.X; x++ {
-					r, _, _, _ := screen.At(x, y).RGBA()
-					if r > 0x8000 {
-						lit++
-					}
-				}
-			}
-			if lit == 0 || lit == view.Display.Dx()*view.Display.Dy() {
-				captureError = fmt.Errorf("OLED rendering is blank: %d lit pixels", lit)
-			}
-			key := view.Keys[0].Bounds
-			_, green, blue, _ := screen.At(key.Min.X+3, key.Min.Y+50).RGBA()
-			if green < 0xc000 || blue < 0xc000 {
-				captureError = fmt.Errorf("pressed key highlight missing: green=%x blue=%x", green, blue)
-			}
-			led := view.LEDs[5]
-			red, green, blue, _ := screen.At(led.X, led.Y).RGBA()
-			if green < 0xc000 || green <= red || green <= blue {
-				captureError = fmt.Errorf("RGB LED rendering missing: red=%x green=%x blue=%x", red, green, blue)
-			}
-			if err := checkBoardGolden(screen, profile.Name); err != nil {
-				captureError = err
-			}
-		}
-		draws++
-		drawBody(screen)
-	}
-	profile.View = view
-	g, err := newGame(profile)
-	if err != nil {
-		return err
-	}
-	g.testUpdate = func(g *game) error {
-		// Keep the golden image independent of the host pointer position.
-		g.hint = defaultHint
-		if draws > 5 {
-			return finished
-		}
-		if draws != lastStep {
-			switch draws {
-			case 1:
-				g.encoder.Rotate(3)
-				g.leds.Set(0, color.RGBA{R: 255})
-				g.leds.Set(5, color.RGBA{G: 255})
-				g.leds.Set(10, color.RGBA{B: 255})
-				if err := g.leds.Display(); err != nil {
-					return err
-				}
-				for x := int16(0); x < 128; x++ {
-					g.display.SetPixel(x, x%64, color.RGBA{R: 255})
-				}
-				if err := g.display.Display(); err != nil {
-					return err
-				}
-			case 2:
-				g.encoder.Rotate(-5)
-			case 3:
-				g.encoder.SetPressed(true)
-			case 4:
-				g.encoder.SetPressed(false)
-			}
-			lastStep = draws
-		}
-		// Hold through every Update between these Draw calls, just as the
-		// input sampler does for real keyboard and pointer gestures.
-		if draws == 4 {
-			g.buttons[0].Down = true
-			g.joystick.X, g.joystick.Y = 0.65, -0.4
-		}
-		return nil
-	}
-	err = run(g)
-	if !errors.Is(err, finished) {
+	check := &guiCheck{profiles: []board.Profile{
+		board.ZeroKB02(),
+		board.Conf2025Badge(),
+	}}
+	ebiten.SetWindowSize(890, 860)
+	ebiten.SetWindowTitle("TinyGo device emulator GUI check")
+	err := ebiten.RunGame(check)
+	if !errors.Is(err, errGUICheckFinished) {
 		return fmt.Errorf("GUI exited before check completed: %v", err)
 	}
-	return captureError
+	return check.err
+}
+
+func renderBoard(profile board.Profile) (*ebiten.Image, error) {
+	g, err := newGame(profile)
+	if err != nil {
+		return nil, err
+	}
+	g.hint = defaultHint
+	g.encoder.Rotate(-2)
+	g.leds.Set(0, color.RGBA{R: 255})
+	g.leds.Set(10, color.RGBA{B: 255})
+	g.leds.Set(min(5, g.leds.Len()-1), color.RGBA{G: 255})
+	if err := g.leds.Display(); err != nil {
+		return nil, err
+	}
+	for x := int16(0); x < profile.DisplayWidth; x++ {
+		g.display.SetPixel(x, x%profile.DisplayHeight, color.RGBA{R: 255})
+	}
+	if err := g.display.Display(); err != nil {
+		return nil, err
+	}
+	g.buttons[0].Down = true
+	g.joystick.X, g.joystick.Y = 0.65, -0.4
+	actual := ebiten.NewImage(profile.View.Width, profile.View.Height)
+	g.Draw(actual)
+	return actual, nil
+}
+
+func checkBoardRendering(actual *ebiten.Image, profile board.Profile) error {
+	view := profile.View
+	lit := 0
+	for y := view.Display.Min.Y; y < view.Display.Max.Y; y++ {
+		for x := view.Display.Min.X; x < view.Display.Max.X; x++ {
+			r, _, _, _ := actual.At(x, y).RGBA()
+			if r > 0x8000 {
+				lit++
+			}
+		}
+	}
+	if lit == 0 || lit == view.Display.Dx()*view.Display.Dy() {
+		return fmt.Errorf("OLED rendering is blank: %d lit pixels", lit)
+	}
+	key := view.Keys[0].Bounds
+	_, green, blue, _ := actual.At(key.Min.X+3, key.Min.Y+50).RGBA()
+	if green < 0xc000 || blue < 0xc000 {
+		return fmt.Errorf("pressed key highlight missing: green=%x blue=%x", green, blue)
+	}
+	led := view.LEDs[min(5, len(view.LEDs)-1)]
+	red, green, blue, _ := actual.At(led.X, led.Y).RGBA()
+	if green < 0xc000 || green <= red || green <= blue {
+		return fmt.Errorf("RGB LED rendering missing: red=%x green=%x blue=%x", red, green, blue)
+	}
+	return checkBoardGolden(actual, profile.Name)
 }
 
 func checkBoardGolden(screen *ebiten.Image, name string) error {
