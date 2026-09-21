@@ -11,7 +11,6 @@ import (
 	"math"
 
 	"github.com/hajimehoshi/ebiten/v2"
-	"github.com/hajimehoshi/ebiten/v2/audio"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
 	"github.com/hajimehoshi/ebiten/v2/vector"
 	"github.com/rin2yh/rp2040-simulator/internal/board"
@@ -23,8 +22,6 @@ type game struct {
 	display               *Display
 	leds                  *LEDs
 	buzzer                *Buzzer
-	buzzerPlayer          *audio.Player
-	buzzerFrequency       uint32
 	encoder               Encoder
 	oled                  *ebiten.Image
 	pixels                []byte
@@ -54,7 +51,7 @@ func run(g *game) error {
 		return fmt.Errorf("start emulator RPC server: %w", err)
 	}
 	defer listener.Close()
-	defer g.stopBuzzerAudio()
+	defer g.buzzer.closeAudio()
 	w, h := g.Layout(0, 0)
 	ebiten.SetWindowSize(w, h)
 	ebiten.SetWindowTitle(g.profile.Name + " | TinyGo device emulator")
@@ -96,7 +93,6 @@ func newGame(profile board.Profile) (*game, error) {
 
 func (g *game) restart(bootloader bool) error {
 	g.buzzer.reset(bootloader)
-	g.stopBuzzerAudio()
 	g.bootloader, g.bootArmed, g.zoom = bootloader, false, false
 	g.encoder = Encoder{}
 	g.joystick = Joystick{}
@@ -118,7 +114,7 @@ func (g *game) restart(bootloader bool) error {
 }
 
 func (g *game) Update() error {
-	if err := g.updateBuzzerAudio(); err != nil {
+	if err := g.buzzer.updateAudio(); err != nil {
 		return err
 	}
 	if g.resetFlash > 0 {

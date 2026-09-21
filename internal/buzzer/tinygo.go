@@ -2,17 +2,11 @@
 
 package buzzer
 
-import (
-	"errors"
-	"machine"
-)
+import "machine"
 
 type Device struct{ channel uint8 }
 
-func New(pin uint8) (Device, error) {
-	if machine.Pin(pin) != machine.GPIO1 {
-		return Device{}, errors.New("conf2025badge buzzer requires GPIO1")
-	}
+func newDevice() (Device, error) {
 	if err := machine.PWM0.Configure(machine.PWMConfig{Period: 1000000000 / 440}); err != nil {
 		return Device{}, err
 	}
@@ -24,10 +18,7 @@ func New(pin uint8) (Device, error) {
 	return Device{channel: ch}, nil
 }
 
-func (d Device) SetFrequency(hz uint32) error {
-	if err := ValidateFrequency(hz); err != nil {
-		return err
-	}
+func (d Device) setFrequency(hz uint32) error {
 	machine.PWM0.Set(d.channel, 0)
 	if hz == 0 {
 		return nil
@@ -38,5 +29,3 @@ func (d Device) SetFrequency(hz uint32) error {
 	machine.PWM0.Set(d.channel, machine.PWM0.Top()/2)
 	return nil
 }
-
-func (d Device) Stop() error { return d.SetFrequency(0) }

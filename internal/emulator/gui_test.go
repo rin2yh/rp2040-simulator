@@ -149,14 +149,14 @@ func checkBuzzerAudio(g *game, step int) error {
 	if err := g.buzzer.SetFrequency(&bridge.BuzzerArgs{Frequency: hz}, &struct{}{}); err != nil {
 		return err
 	}
-	if err := g.updateBuzzerAudio(); err != nil {
+	if err := g.buzzer.updateAudio(); err != nil {
 		return err
 	}
 	if hz == 0 {
-		if g.buzzerPlayer != nil {
+		if g.buzzer.player != nil {
 			return errors.New("buzzer player survived Stop")
 		}
-	} else if g.buzzerPlayer == nil || !g.buzzerPlayer.IsPlaying() || g.buzzerFrequency != hz {
+	} else if g.buzzer.player == nil || !g.buzzer.player.IsPlaying() || g.buzzer.playing != hz {
 		return errors.New("buzzer audio did not start or change frequency")
 	}
 	return nil

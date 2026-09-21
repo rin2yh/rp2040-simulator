@@ -18,6 +18,9 @@ type Buzzer struct {
 	mu        sync.Mutex
 	frequency uint32
 	paused    bool
+	// Audio state is accessed only by the game loop.
+	player  *audio.Player
+	playing uint32
 }
 
 func (b *Buzzer) SetFrequency(args *bridge.BuzzerArgs, _ *struct{}) error {
@@ -49,6 +52,7 @@ func (b *Buzzer) reset(paused bool) {
 	if b == nil {
 		return
 	}
+	b.closeAudio()
 	b.mu.Lock()
 	defer b.mu.Unlock()
 	b.frequency, b.paused = 0, paused
@@ -72,20 +76,26 @@ func buzzerPCM(hz uint32, sampleRate int) []byte {
 	return pcm
 }
 
-func (g *game) stopBuzzerAudio() {
-	if g.buzzerPlayer != nil {
-		_ = g.buzzerPlayer.Close()
-		g.buzzerPlayer = nil
+func (b *Buzzer) closeAudio() {
+	if b == nil {
+		return
 	}
-	g.buzzerFrequency = 0
+	if b.player != nil {
+		_ = b.player.Close()
+		b.player = nil
+	}
+	b.playing = 0
 }
 
-func (g *game) updateBuzzerAudio() error {
-	hz := g.buzzer.Frequency()
-	if hz == g.buzzerFrequency {
+func (b *Buzzer) updateAudio() error {
+	if b == nil {
 		return nil
 	}
-	g.stopBuzzerAudio()
+	hz := b.Frequency()
+	if hz == b.playing {
+		return nil
+	}
+	b.closeAudio()
 	if hz == 0 {
 		return nil
 	}
@@ -98,7 +108,7 @@ func (g *game) updateBuzzerAudio() error {
 	if err != nil {
 		return err
 	}
-	g.buzzerPlayer, g.buzzerFrequency = player, hz
+	b.player, b.playing = player, hz
 	player.Play()
 	return nil
 }
