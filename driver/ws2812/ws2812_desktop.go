@@ -1,7 +1,7 @@
 //go:build !tinygo
 
 // Package ws2812 provides the same application-facing operations on desktop
-// and zero-kb02 hardware.
+// and supported TinyGo hardware.
 package ws2812
 
 import (
@@ -21,7 +21,7 @@ var call = bridge.Call
 func NewWS2812(pin machine.Pin) Device { return Device{pin: pin} }
 
 func (d Device) WriteColors(colors []color.RGBA) error {
-	if d.pin != machine.GPIO1 {
+	if d.pin != machine.GPIO1 && d.pin != machine.GPIO0 {
 		return errors.New("unsupported WS2812 pin")
 	}
 	args := bridge.WriteLEDsArgs{Colors: append([]color.RGBA(nil), colors...)}

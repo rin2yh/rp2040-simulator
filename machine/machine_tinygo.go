@@ -1,6 +1,6 @@
-//go:build tinygo && waveshare_rp2040_zero
+//go:build tinygo && (waveshare_rp2040_zero || xiao_rp2040)
 
-// Package machine exposes zero-kb02 pins on desktop and TinyGo builds.
+// Package machine exposes supported board pins on desktop and TinyGo builds.
 package machine
 
 import m "machine"
@@ -12,3 +12,4 @@ type PinConfig = m.PinConfig
 const PinOutput = m.PinOutput
 
 const GPIO1 = m.GPIO1
+const GPIO0 = m.GPIO0

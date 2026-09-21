@@ -32,7 +32,10 @@ func TestGUIRenderingMatchesBoardGolden(t *testing.T) {
 }
 
 func checkGUI() error {
-	profile := board.ZeroKB02()
+	profile, err := board.Lookup(os.Getenv(board.Environment))
+	if err != nil {
+		return err
+	}
 	view := profile.View
 	drawBody := view.DrawBody
 	draws, lastStep := 0, -1
@@ -61,7 +64,7 @@ func checkGUI() error {
 			if green < 0xc000 || blue < 0xc000 {
 				captureError = fmt.Errorf("pressed key highlight missing: green=%x blue=%x", green, blue)
 			}
-			led := view.LEDs[5]
+			led := view.LEDs[min(5, len(view.LEDs)-1)]
 			red, green, blue, _ := screen.At(led.X, led.Y).RGBA()
 			if green < 0xc000 || green <= red || green <= blue {
 				captureError = fmt.Errorf("RGB LED rendering missing: red=%x green=%x blue=%x", red, green, blue)
@@ -89,8 +92,8 @@ func checkGUI() error {
 			case 1:
 				g.encoder.Rotate(3)
 				g.leds.Set(0, color.RGBA{R: 255})
-				g.leds.Set(5, color.RGBA{G: 255})
 				g.leds.Set(10, color.RGBA{B: 255})
+				g.leds.Set(min(5, g.leds.Len()-1), color.RGBA{G: 255})
 				if err := g.leds.Display(); err != nil {
 					return err
 				}

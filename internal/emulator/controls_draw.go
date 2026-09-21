@@ -86,7 +86,7 @@ func (g *game) drawInputs(dst *ebiten.Image) {
 		vector.FillCircle(dst, x, y+9, 36, color.RGBA{R: 104, G: 115, B: 109, A: 255}, true)
 		vector.FillCircle(dst, x, y, 36, color.RGBA{R: 183, G: 188, B: 173, A: 255}, true)
 		vector.FillCircle(dst, x, y-1, 30, c, true)
-		board.Label(dst, fmt.Sprintf("X %+.1f  Y %+.1f", g.joystick.X, g.joystick.Y), float64(g.view.Joystick.X-59), 322, 12, color.RGBA{R: 185, G: 196, B: 199, A: 255})
+		board.Label(dst, fmt.Sprintf("X %+.1f  Y %+.1f", g.joystick.X, g.joystick.Y), float64(g.view.JoystickLabel.X), float64(g.view.JoystickLabel.Y), 12, color.RGBA{R: 185, G: 196, B: 199, A: 255})
 	}
 	for _, button := range []struct {
 		rect image.Rectangle
