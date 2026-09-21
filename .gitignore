@@ -1,0 +1,28 @@
+# If you prefer the allow list template instead of the deny list, see:
+# https://github.com/github/gitignore/blob/main/community/Golang/Go.AllowList.gitignore
+
+# Binaries for programs and plugins
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.elf
+*.uf2
+/rp2040-simulator
+/build/
+
+# Test binaries and artifacts
+*.test
+*.out
+coverage.*
+*.coverprofile
+profile.cov
+
+# Go workspace files
+go.work
+go.work.sum
+
+# Environment and OS files
+.env
+.DS_Store

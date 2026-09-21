@@ -1,0 +1,37 @@
+[tools]
+go = "1.27.1"
+"aqua:tinygo-org/tinygo" = "0.42.0"
+
+[tasks.run]
+description = "Run the zero-kb02 emulator"
+run = "go run ."
+
+[tasks.test]
+description = "Run tests and static checks"
+run = [
+  "go test ./...",
+  "go vet ./...",
+]
+
+[tasks.test-gui]
+description = "Run the Ebitengine rendering check"
+env = { GOFLAGS = "-tags=gui" }
+run = "go test ./internal/emulator -count=1"
+
+[tasks.screenshot]
+description = "Capture and verify the emulator UI"
+env = {
+  GOFLAGS = "-tags=gui",
+  EMULATOR_SNAPSHOT = "{{config_root}}/build/emulator.png",
+}
+run = [
+  "mkdir -p build",
+  "go test ./internal/emulator -count=1",
+]
+
+[tasks.build]
+description = "Build the desktop emulator"
+run = [
+  "mkdir -p build",
+  "go build -o build/zero-kb02 .",
+]
