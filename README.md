@@ -6,41 +6,34 @@ RP2040ボード向けTinyGoアプリを、実機へ書き込まずにPCで動か
 
 SSD1306 OLED、キーLED、ロータリーエンコーダ、ジョイスティック、BOOT / RESETを画面上で操作できます。RP2040やGPIO / I2C / SPI自体はエミュレートしません。
 
-## Setup
+## Usage
 
-[mise](https://mise.jdx.dev/) をインストールしてから、ツールをセットアップします。
+Go moduleをアプリへ追加します。
+
+```sh
+go get github.com/rin2yh/rp2040-simulator@latest
+```
+
+PCとTinyGoで共通に使えるpackageと最小構成のアプリは、[LED blink example](examples/led-blink)を参照してください。
+
+## Development
+
+### Setup
+
+[mise](https://mise.jdx.dev/) をインストールしてから、開発ツールをセットアップします。
 
 ```sh
 mise install
 ```
 
-## Run
+### Commands
 
 ```sh
-go run ./examples/led-blink
-```
-
-PCではアプリの起動時にエミュレータも開きます。画面上の部品をクリックまたはドラッグして操作できます。
-
-別のGo moduleから利用する場合は依存関係を追加し、[examples/led-blink](examples/led-blink)と同じpackageをimportします。
-
-```sh
-go get github.com/rin2yh/rp2040-simulator@v0.1.0
-```
-
-## LED blink on zero-kb02
-
-```sh
-tinygo build -target=waveshare-rp2040-zero -o build/led-blink.uf2 ./examples/led-blink
-
-# 実機へ書き込む場合
-tinygo flash -target=waveshare-rp2040-zero ./examples/led-blink
-```
-
-## Development
-
-```sh
-mise run test
+mise run run         # エミュレータを起動
+mise run test        # テストと静的検査
+mise run test-gui    # GUIのgolden imageテスト
+mise run screenshot  # GUIのスクリーンショットを生成
+mise run build       # PC向けバイナリをビルド
 ```
 
 ## License

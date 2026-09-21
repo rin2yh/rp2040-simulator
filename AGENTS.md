@@ -20,13 +20,14 @@
 - PC emulator: `mise run run`。
 - テストと静的検査: `mise run test`。
 - GUI描画テスト: `mise run test-gui`。
+- TinyGo互換性ビルド: `mise run build-tinygo`。
 - スクリーンショット: `mise run screenshot`。
 - PC build: `mise run build`。
 
-TinyGoの検証は対象サンプルを直接ビルドする。実機書き込みはユーザーが明示的に依頼した場合だけ行う。
+TinyGoの互換性は専用fixtureをビルドして検証する。サンプルをCIのfixtureとして使わない。実機書き込みはユーザーが明示的に依頼した場合だけ行う。
 
 ```sh
-tinygo build -target=waveshare-rp2040-zero -o build/led-blink.uf2 ./examples/led-blink
+mise run build-tinygo
 ```
 
 ## Structure
@@ -35,6 +36,7 @@ tinygo build -target=waveshare-rp2040-zero -o build/led-blink.uf2 ./examples/led
 machine/                 TinyGo machine互換の公開package
 driver/ws2812/           PC RPC / TinyGo実ドライバの切り替え
 examples/led-blink/      利用者コードの例
+internal/tinygocheck/    TinyGo公開APIのbuild-only fixture
 internal/bridge/         RPC protocolとclient
 internal/board/          ボードprofileとGUI描画
 internal/emulator/       Ebitengine、入力、仮想デバイス、RPC server
@@ -64,7 +66,7 @@ ADC中央ずれ、encoderの物理的な回転方向、OLED表示方向は実機
 
 ## Verification
 
-通常は`mise run test`を実行する。GUI / input変更では`mise run test-gui`、公開driver変更では対応するTinyGoサンプルのビルドも実行する。
+通常は`mise run test`を実行する。GUI / input変更では`mise run test-gui`、公開driver変更では`mise run build-tinygo`も実行する。
 
 SSD1306 pixel parity、buffer commit、encoder fraction、pointer capture、focus loss、joystick clamp、RESET、RPC LED frame、外部moduleからのimportを維持する。
 
@@ -75,5 +77,5 @@ SSD1306 pixel parity、buffer commit、encoder fraction、pointer capture、focu
 - Git tagをGo moduleのバージョンとして扱い、ソースコード内にバージョン定数を置かない。
 - tagprでSemantic VersioningのtagとGitHub Releaseを作成する。通常はpatch、`tagpr:minor`と`tagpr:major`で更新幅を指定する。
 - 実行バイナリは配布しない。利用者はGo moduleとして取得する。
-- CIはLinux上のGo test / vet、macOS上のGUI golden image、Windows build、TinyGoサンプルを検証する。
+- CIはLinux上のGo test / lint、macOS上のGUI golden image、専用fixtureによるTinyGo互換性を検証する。
 - 依存関係の更新にはDependabotを使う。コンテナを配布しないためTrivyは追加しない。

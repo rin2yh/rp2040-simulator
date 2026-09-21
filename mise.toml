@@ -1,6 +1,7 @@
 [tools]
 go = "1.27.1"
 "aqua:tinygo-org/tinygo" = "0.42.0"
+"aqua:rhysd/actionlint" = "1.7.12"
 
 [tasks.run]
 description = "Run the zero-kb02 emulator"
@@ -9,8 +10,20 @@ run = "go run ."
 [tasks.test]
 description = "Run tests and static checks"
 run = [
-  "go test ./...",
-  "go vet ./...",
+  "mise run test-go",
+  "mise run lint",
+]
+
+[tasks.test-go]
+description = "Run Go tests for the simulator"
+run = "go test . ./machine/... ./driver/... ./internal/..."
+
+[tasks.lint]
+description = "Run static and repository checks"
+run = [
+  "go vet . ./machine/... ./driver/... ./internal/...",
+  "go mod tidy -diff",
+  "actionlint",
 ]
 
 [tasks.test-gui]
@@ -34,4 +47,11 @@ description = "Build the desktop emulator"
 run = [
   "mkdir -p build",
   "go build -o build/zero-kb02 .",
+]
+
+[tasks.build-tinygo]
+description = "Build the TinyGo compatibility check"
+run = [
+  "mkdir -p build",
+  "tinygo build -target=waveshare-rp2040-zero -o build/tinygo-check.uf2 ./internal/tinygocheck",
 ]
