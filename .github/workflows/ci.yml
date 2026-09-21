@@ -25,12 +25,9 @@ jobs:
       - uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c # v4.3.0
         with:
           install_args: aqua:rhysd/actionlint
-      - id: go-version
-        name: Read Go version
-        run: echo "version=$(mise config get tools.go)" >> "$GITHUB_OUTPUT"
       - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
-          go-version: ${{ steps.go-version.outputs.version }}
+          go-version-file: go.mod
           cache: true
       - name: Lint
         run: mise run lint
@@ -46,12 +43,9 @@ jobs:
       - uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c # v4.3.0
         with:
           install: false
-      - id: go-version
-        name: Read Go version
-        run: echo "version=$(mise config get tools.go)" >> "$GITHUB_OUTPUT"
       - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
-          go-version: ${{ steps.go-version.outputs.version }}
+          go-version-file: go.mod
           cache: true
       - name: Test
         run: mise run test
@@ -67,12 +61,9 @@ jobs:
       - uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c # v4.3.0
         with:
           install_args: aqua:tinygo-org/tinygo
-      - id: go-version
-        name: Read Go version
-        run: echo "version=$(mise config get tools.go)" >> "$GITHUB_OUTPUT"
       - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
-          go-version: ${{ steps.go-version.outputs.version }}
+          go-version-file: go.mod
           cache: true
       - name: Build TinyGo compatibility check
         run: mise run build-tinygo
