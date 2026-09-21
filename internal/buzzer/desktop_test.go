@@ -31,15 +31,37 @@ func TestDeviceRPC(t *testing.T) {
 	if err := d.Stop(); !errors.Is(err, want) {
 		t.Fatal(err)
 	}
-	for _, hz := range []uint32{1, 27, 20001, ^uint32(0)} {
-		if err := d.SetFrequency(hz); err == nil {
-			t.Fatalf("accepted %d Hz", hz)
-		}
-	}
 	if len(frequencies) != 2 || frequencies[0] != 440 || frequencies[1] != 0 {
 		t.Fatal(frequencies)
 	}
 	if _, err := New(0); err == nil {
 		t.Fatal("accepted unsupported pin")
+	}
+}
+
+func TestValidateFrequency(t *testing.T) {
+	type want struct {
+		err bool
+	}
+	tests := []struct {
+		name string
+		hz   uint32
+		want want
+	}{
+		{name: "silence", hz: 0},
+		{name: "below minimum", hz: 27, want: want{err: true}},
+		{name: "minimum", hz: 28},
+		{name: "maximum", hz: 20000},
+		{name: "above maximum", hz: 20001, want: want{err: true}},
+		{name: "uint32 maximum", hz: ^uint32(0), want: want{err: true}},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := ValidateFrequency(tt.hz)
+			if (err != nil) != tt.want.err {
+				t.Fatalf("ValidateFrequency(%d) error = %v, want error %v", tt.hz, err, tt.want.err)
+			}
+		})
 	}
 }
