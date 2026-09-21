@@ -78,5 +78,5 @@ SSD1306 pixel parity、buffer commit、encoder fraction、pointer capture、focu
 - Git tagをGo moduleのバージョンとして扱い、ソースコード内にバージョン定数を置かない。
 - tagprでSemantic VersioningのtagとGitHub Releaseを作成する。通常はpatch、`tagpr:minor`と`tagpr:major`で更新幅を指定する。
 - 実行バイナリは配布しない。利用者はGo moduleとして取得する。
-- CIはLinux上のGo test / lint、macOS上のGUI golden image、専用fixtureによるTinyGo互換性を検証する。
+- CIはmacOS上のGo test / GUI golden image、Linux上のlint、専用fixtureによるTinyGo互換性を検証する。
 - 依存関係の更新にはDependabotを使う。コンテナを配布しないためTrivyは追加しない。
