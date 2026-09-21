@@ -7,6 +7,7 @@ import "image/color"
 const (
 	Address         = "127.0.0.1:9840"
 	EmulatorProcess = "RP2040_SIMULATOR_EMULATOR_PROCESS"
+	EmulatorBoard   = "RP2040_SIMULATOR_EMULATOR_BOARD"
 )
 
 type WriteLEDsArgs struct {

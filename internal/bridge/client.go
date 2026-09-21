@@ -7,6 +7,7 @@ import (
 	"net/rpc"
 	"os"
 	"os/exec"
+	"strings"
 	"sync"
 	"time"
 )
@@ -15,7 +16,18 @@ var (
 	mu         sync.Mutex
 	connection *rpc.Client
 	launching  bool
+	boardName  string
 )
+
+func ConfigureBoard(name string) error {
+	mu.Lock()
+	defer mu.Unlock()
+	if connection != nil || launching {
+		return fmt.Errorf("configure simulator before using a simulated device")
+	}
+	boardName = name
+	return nil
+}
 
 func Call(method string, args, reply any) error {
 	mu.Lock()
@@ -58,8 +70,8 @@ func launchEmulator() error {
 	if err != nil {
 		return fmt.Errorf("locate application executable: %w", err)
 	}
-	cmd := exec.Command(executable, os.Args[1:]...)
-	cmd.Env = append(os.Environ(), EmulatorProcess+"=1")
+	cmd := exec.Command(executable)
+	cmd.Env = emulatorEnvironment(os.Environ(), boardName)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	if err := cmd.Start(); err != nil {
@@ -73,4 +85,15 @@ func launchEmulator() error {
 		mu.Unlock()
 	}()
 	return nil
+}
+
+func emulatorEnvironment(environ []string, board string) []string {
+	env := make([]string, 0, len(environ)+2)
+	for _, value := range environ {
+		if strings.HasPrefix(value, EmulatorProcess+"=") || strings.HasPrefix(value, EmulatorBoard+"=") {
+			continue
+		}
+		env = append(env, value)
+	}
+	return append(env, EmulatorProcess+"=1", EmulatorBoard+"="+board)
 }

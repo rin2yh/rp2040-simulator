@@ -4,11 +4,8 @@
 package machine
 
 import (
-	"errors"
-	"flag"
 	"fmt"
 	"os"
-	"strings"
 
 	"github.com/rin2yh/rp2040-simulator/internal/board"
 	"github.com/rin2yh/rp2040-simulator/internal/bridge"
@@ -34,10 +31,8 @@ const GPIO1 Pin = 1
 // GPIO0 drives the two conf2025badge key LEDs.
 const GPIO0 Pin = 0
 
-var selectedBoard = flag.String("board", "zero-kb02", "board to emulate")
-
 func init() {
-	handled, err := runEmulatorProcess(os.Getenv, os.Args[1:], emulator.Run)
+	handled, err := runEmulatorProcess(os.Getenv, emulator.Run)
 	if !handled {
 		return
 	}
@@ -48,21 +43,13 @@ func init() {
 	os.Exit(0)
 }
 
-func runEmulatorProcess(getenv func(string) string, args []string, run func(board.Profile) error) (bool, error) {
+func runEmulatorProcess(getenv func(string) string, run func(board.Profile) error) (bool, error) {
 	if getenv(bridge.EmulatorProcess) != "1" {
 		return false, nil
 	}
-	name := *selectedBoard
-	for i, arg := range args {
-		if arg == "--board" {
-			if i+1 == len(args) {
-				return true, errors.New("flag needs an argument: --board")
-			}
-			name = args[i+1]
-		}
-		if value, ok := strings.CutPrefix(arg, "--board="); ok {
-			name = value
-		}
+	name := getenv(bridge.EmulatorBoard)
+	if name == "" {
+		name = "zero-kb02"
 	}
 	profile, err := board.Lookup(name)
 	if err != nil {

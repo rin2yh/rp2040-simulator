@@ -14,6 +14,14 @@ Go moduleをアプリへ追加します。
 go get github.com/rin2yh/rp2040-simulator@latest
 ```
 
+zero-kb02以外を使う場合は、デバイスを使う前に対象ボードを設定します。未指定時はzero-kb02を使用します。
+
+```go
+if err := simulator.Configure(simulator.Config{Board: "conf2025badge"}); err != nil {
+	log.Fatal(err)
+}
+```
+
 PCとTinyGoで共通に使えるpackageと最小構成のアプリは、[LED blink example](examples/led-blink)を参照してください。
 
 ## Development

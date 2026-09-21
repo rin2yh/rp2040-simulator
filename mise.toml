@@ -9,12 +9,12 @@ run = "go run ."
 
 [tasks.test]
 description = "Run Go tests for the simulator"
-run = "go test . ./machine/... ./driver/... ./internal/..."
+run = "go test . ./simulator/... ./machine/... ./driver/... ./internal/..."
 
 [tasks.lint]
 description = "Run static and repository checks"
 run = [
-  "go vet . ./machine/... ./driver/... ./internal/...",
+  "go vet . ./simulator/... ./machine/... ./driver/... ./internal/...",
   "go mod tidy -diff",
   "actionlint",
 ]

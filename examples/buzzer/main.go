@@ -5,9 +5,13 @@ import (
 
 	"github.com/rin2yh/rp2040-simulator/driver/buzzer"
 	"github.com/rin2yh/rp2040-simulator/machine"
+	"github.com/rin2yh/rp2040-simulator/simulator"
 )
 
 func main() {
+	if err := simulator.Configure(simulator.Config{Board: "conf2025badge"}); err != nil {
+		panic(err)
+	}
 	speaker, err := buzzer.New(machine.GPIO1)
 	if err != nil {
 		panic(err)
