@@ -7,16 +7,11 @@ go = "1.27.1"
 description = "Run the zero-kb02 emulator"
 run = "go run ."
 
-[tasks.run-conf2025badge]
-description = "Run the conf2025badge emulator"
-env = { RP2040_SIMULATOR_BOARD = "conf2025badge" }
-run = "go run ."
-
 [tasks.test]
 description = "Run Go tests for the simulator"
 run = [
   "go test . ./machine/... ./driver/... ./internal/...",
-  "RP2040_SIMULATOR_BOARD=conf2025badge go test ./internal/emulator -count=1",
+  "go test ./internal/emulator -count=1 -args --board conf2025badge",
 ]
 
 [tasks.lint]
@@ -42,7 +37,7 @@ env = {
 run = [
   "mkdir -p build",
   "go test ./internal/emulator -count=1",
-  "RP2040_SIMULATOR_BOARD=conf2025badge go test ./internal/emulator -count=1",
+  "go test ./internal/emulator -count=1 -args --board conf2025badge",
 ]
 
 [tasks.build]
@@ -51,11 +46,6 @@ run = [
   "mkdir -p build",
   "go build -o build/zero-kb02 .",
 ]
-
-[tasks.test-audio]
-description = "Verify buzzer playback on a desktop with audio output"
-env = { RP2040_SIMULATOR_BOARD = "conf2025badge", EMULATOR_TEST_AUDIO = "1" }
-run = "go test ./internal/emulator -count=1"
 
 [tasks.build-tinygo]
 description = "Build the TinyGo compatibility check"

@@ -3,6 +3,7 @@ package emulator
 import (
 	"bytes"
 	"errors"
+	"flag"
 	"fmt"
 	"image"
 	"image/color"
@@ -18,6 +19,7 @@ import (
 )
 
 var guiError error
+var testBoard = flag.String("board", "zero-kb02", "board to render")
 
 // Ebitengine must run on the main goroutine, hence TestMain. Enable explicitly
 // with the gui build tag on a desktop or under Xvfb. Ordinary tests remain headless.
@@ -33,7 +35,7 @@ func TestGUIRenderingMatchesBoardGolden(t *testing.T) {
 }
 
 func checkGUI() error {
-	profile, err := board.Lookup(os.Getenv(board.Environment))
+	profile, err := board.Lookup(*testBoard)
 	if err != nil {
 		return err
 	}

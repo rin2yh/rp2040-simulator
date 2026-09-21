@@ -12,7 +12,7 @@ import (
 
 func TestRunEmulatorProcessIgnoresApplicationProcess(t *testing.T) {
 	called := false
-	handled, err := runEmulatorProcess(func(string) string { return "" }, func(board.Profile) error {
+	handled, err := runEmulatorProcess(func(string) string { return "" }, nil, func(board.Profile) error {
 		called = true
 		return nil
 	})
@@ -31,7 +31,7 @@ func TestRunEmulatorProcessStartsZeroKB02(t *testing.T) {
 			return "1"
 		}
 		return ""
-	}, func(profile board.Profile) error {
+	}, nil, func(profile board.Profile) error {
 		if profile.Name != "zero-kb02" {
 			t.Fatalf("profile = %q, want zero-kb02", profile.Name)
 		}
@@ -53,11 +53,8 @@ func TestRunEmulatorProcessSelectsBoard(t *testing.T) {
 				if key == bridge.EmulatorProcess {
 					return "1"
 				}
-				if key == board.Environment {
-					return name
-				}
 				return ""
-			}, func(p board.Profile) error {
+			}, []string{"--board", name}, func(p board.Profile) error {
 				called = true
 				if p.Name != name || p.LEDCount != 2 || len(p.View.Keys) != 2 {
 					t.Fatalf("unexpected profile: %+v", p)

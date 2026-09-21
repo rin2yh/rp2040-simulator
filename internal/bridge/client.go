@@ -58,7 +58,7 @@ func launchEmulator() error {
 	if err != nil {
 		return fmt.Errorf("locate application executable: %w", err)
 	}
-	cmd := exec.Command(executable)
+	cmd := exec.Command(executable, os.Args[1:]...)
 	cmd.Env = append(os.Environ(), EmulatorProcess+"=1")
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr

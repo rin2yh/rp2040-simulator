@@ -10,11 +10,9 @@ import (
 	"github.com/hajimehoshi/ebiten/v2"
 )
 
-const Environment = "RP2040_SIMULATOR_BOARD"
-
 func Lookup(name string) (Profile, error) {
 	switch name {
-	case "", "zero-kb02":
+	case "zero-kb02":
 		return ZeroKB02(), nil
 	case "conf2025badge":
 		return Conf2025Badge(), nil
