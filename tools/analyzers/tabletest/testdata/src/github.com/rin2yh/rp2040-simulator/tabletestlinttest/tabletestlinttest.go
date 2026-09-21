@@ -23,6 +23,10 @@ type sliceOfFunctions struct {
 	Checks []callback
 }
 
+type arrayOfFunctions struct {
+	Checks [2]callback
+}
+
 type mapOfFunctions struct {
 	Checks map[string]callback
 }
@@ -35,5 +39,6 @@ var functionWant = tabletest.Case[string, func(error) bool]{}                   
 var functionInStruct = tabletest.Case[string, functionField]{}                     // want "tabletest.Case Want type github.com/rin2yh/rp2040-simulator/tabletestlinttest.functionField contains a function type"
 var functionThroughPointer = tabletest.Case[pointerToFunction, bool]{}             // want "tabletest.Case In type github.com/rin2yh/rp2040-simulator/tabletestlinttest.pointerToFunction contains a function type"
 var functionThroughSlice = tabletest.Case[string, sliceOfFunctions]{}              // want "tabletest.Case Want type github.com/rin2yh/rp2040-simulator/tabletestlinttest.sliceOfFunctions contains a function type"
+var functionThroughArray = tabletest.Case[string, arrayOfFunctions]{}              // want "tabletest.Case Want type github.com/rin2yh/rp2040-simulator/tabletestlinttest.arrayOfFunctions contains a function type"
 var functionThroughMap = tabletest.Case[string, mapOfFunctions]{}                  // want "tabletest.Case Want type github.com/rin2yh/rp2040-simulator/tabletestlinttest.mapOfFunctions contains a function type"
 var functionInInterface = tabletest.Case[string, interface{ Check(error) bool }]{} // want "tabletest.Case Want type interface{Check\\(error\\) bool} contains a function type"
