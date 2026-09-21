@@ -50,9 +50,19 @@ jobs:
         run: go test ./...
 
   tinygo:
-    name: TinyGo Build
+    name: TinyGo Build (${{ matrix.name }})
     runs-on: ubuntu-26.04
     timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Waveshare RP2040-Zero
+            target: waveshare-rp2040-zero
+            output: tinygo-check.uf2
+          - name: XIAO RP2040
+            target: xiao-rp2040
+            output: tinygo-conf2025badge-check.uf2
     steps:
       - *checkout
       - *setup-go
@@ -60,7 +70,5 @@ jobs:
         with:
           tinygo-version: 0.42.0
           install-binaryen: false
-      - name: Build for Waveshare RP2040-Zero
-        run: tinygo build -target=waveshare-rp2040-zero -o "$RUNNER_TEMP/tinygo-check.uf2" ./testdata/tinygo
-      - name: Build for XIAO RP2040
-        run: tinygo build -target=xiao-rp2040 -o "$RUNNER_TEMP/tinygo-conf2025badge-check.uf2" ./testdata/tinygo
+      - name: Build
+        run: tinygo build -target=${{ matrix.target }} -o "$RUNNER_TEMP/${{ matrix.output }}" ./testdata/tinygo
