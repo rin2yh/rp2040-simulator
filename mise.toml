@@ -8,13 +8,6 @@ description = "Run the zero-kb02 emulator"
 run = "go run ."
 
 [tasks.test]
-description = "Run tests and static checks"
-run = [
-  "mise run test-go",
-  "mise run lint",
-]
-
-[tasks.test-go]
 description = "Run Go tests for the simulator"
 run = "go test . ./machine/... ./driver/... ./internal/..."
 
@@ -24,6 +17,13 @@ run = [
   "go vet . ./machine/... ./driver/... ./internal/...",
   "go mod tidy -diff",
   "actionlint",
+]
+
+[tasks.check]
+description = "Run tests and static checks"
+run = [
+  "mise run test",
+  "mise run lint",
 ]
 
 [tasks.test-gui]
@@ -53,5 +53,5 @@ run = [
 description = "Build the TinyGo compatibility check"
 run = [
   "mkdir -p build",
-  "tinygo build -target=waveshare-rp2040-zero -o build/tinygo-check.uf2 ./internal/tinygocheck",
+  "tinygo build -target=waveshare-rp2040-zero -o build/tinygo-check.uf2 ./testdata/tinygo",
 ]

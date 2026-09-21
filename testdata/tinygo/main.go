@@ -1,6 +1,5 @@
 //go:build tinygo && waveshare_rp2040_zero
 
-// Command tinygocheck verifies that the public device API compiles for TinyGo.
 package main
 
 import (

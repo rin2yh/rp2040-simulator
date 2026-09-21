@@ -18,7 +18,8 @@
 
 - Setup: `mise install`。
 - PC emulator: `mise run run`。
-- テストと静的検査: `mise run test`。
+- テスト: `mise run test`。
+- テストと静的検査: `mise run check`。
 - GUI描画テスト: `mise run test-gui`。
 - TinyGo互換性ビルド: `mise run build-tinygo`。
 - スクリーンショット: `mise run screenshot`。
@@ -36,10 +37,10 @@ mise run build-tinygo
 machine/                 TinyGo machine互換の公開package
 driver/ws2812/           PC RPC / TinyGo実ドライバの切り替え
 examples/led-blink/      利用者コードの例
-internal/tinygocheck/    TinyGo公開APIのbuild-only fixture
 internal/bridge/         RPC protocolとclient
 internal/board/          ボードprofileとGUI描画
 internal/emulator/       Ebitengine、入力、仮想デバイス、RPC server
+testdata/tinygo/          TinyGo公開APIのbuild-only fixture
 ```
 
 ボード追加時は`internal/board/<name>.go`へprofileを追加する。ボードごとのサブディレクトリは作らない。
@@ -66,7 +67,7 @@ ADC中央ずれ、encoderの物理的な回転方向、OLED表示方向は実機
 
 ## Verification
 
-通常は`mise run test`を実行する。GUI / input変更では`mise run test-gui`、公開driver変更では`mise run build-tinygo`も実行する。
+通常は`mise run check`を実行する。GUI / input変更では`mise run test-gui`、公開driver変更では`mise run build-tinygo`も実行する。
 
 SSD1306 pixel parity、buffer commit、encoder fraction、pointer capture、focus loss、joystick clamp、RESET、RPC LED frame、外部moduleからのimportを維持する。
 

@@ -30,7 +30,7 @@ mise install
 
 ```sh
 mise run run         # エミュレータを起動
-mise run test        # テストと静的検査
+mise run check       # テストと静的検査
 mise run test-gui    # GUIのgolden imageテスト
 mise run screenshot  # GUIのスクリーンショットを生成
 mise run build       # PC向けバイナリをビルド
