@@ -1,23 +1,19 @@
-// Command tabletestlint rejects function types in tabletest.Case input and expected values.
-package main
+// Package tabletest defines an analyzer for tabletest.Case type arguments.
+package tabletest
 
 import (
 	"go/types"
 
 	"golang.org/x/tools/go/analysis"
-	"golang.org/x/tools/go/analysis/singlechecker"
 )
 
 const tabletestPackage = "github.com/rin2yh/rp2040-simulator/internal/tabletest"
 
-var analyzer = &analysis.Analyzer{
-	Name: "tabletestlint",
+// Analyzer rejects function types in tabletest.Case input and expected values.
+var Analyzer = &analysis.Analyzer{
+	Name: "tabletest",
 	Doc:  "reject function types in tabletest.Case input and expected values",
 	Run:  run,
-}
-
-func main() {
-	singlechecker.Main(analyzer)
 }
 
 func run(pass *analysis.Pass) (any, error) {
@@ -51,9 +47,9 @@ func containsFunction(t types.Type, seen map[types.Type]bool) bool {
 		return containsFunction(t.Underlying(), seen)
 	case *types.Pointer:
 		return containsFunction(t.Elem(), seen)
-	case *types.Array:
-		return containsFunction(t.Elem(), seen)
 	case *types.Slice:
+		return containsFunction(t.Elem(), seen)
+	case *types.Array:
 		return containsFunction(t.Elem(), seen)
 	case *types.Map:
 		return containsFunction(t.Key(), seen) || containsFunction(t.Elem(), seen)
@@ -65,6 +61,17 @@ func containsFunction(t types.Type, seen map[types.Type]bool) bool {
 				return true
 			}
 		}
+	case *types.Interface:
+		for i := range t.NumExplicitMethods() {
+			if containsFunction(t.ExplicitMethod(i).Type(), seen) {
+				return true
+			}
+		}
+		for i := range t.NumEmbeddeds() {
+			if containsFunction(t.EmbeddedType(i), seen) {
+				return true
+			}
+		}
 	case *types.Tuple:
 		for i := range t.Len() {
 			if containsFunction(t.At(i).Type(), seen) {
@@ -73,12 +80,6 @@ func containsFunction(t types.Type, seen map[types.Type]bool) bool {
 		}
 	case *types.TypeParam:
 		return containsFunction(t.Constraint(), seen)
-	case *types.Interface:
-		for i := range t.NumEmbeddeds() {
-			if containsFunction(t.EmbeddedType(i), seen) {
-				return true
-			}
-		}
 	case *types.Union:
 		for i := range t.Len() {
 			if containsFunction(t.Term(i).Type(), seen) {

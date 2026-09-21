@@ -5,13 +5,15 @@ go = "1.27.1"
 
 [tasks.test]
 description = "Run Go tests for the simulator"
-run = "go test ./simulator/... ./machine/... ./driver/... ./internal/..."
+run = "go test ./simulator/... ./machine/... ./driver/... ./internal/... ./tools/..."
 
 [tasks.lint]
 description = "Run static and repository checks"
 run = [
-  "go vet ./simulator/... ./machine/... ./driver/... ./internal/...",
-  "go run ./internal/tabletestlint ./simulator/... ./machine/... ./driver/... ./internal/...",
+  "go vet ./simulator/... ./machine/... ./driver/... ./internal/... ./tools/...",
+  "mkdir -p build",
+  "go build -o build/vettool ./tools/vet",
+  "go vet -vettool=./build/vettool ./simulator/... ./machine/... ./driver/... ./internal/... ./tools/...",
   "go mod tidy -diff",
   "actionlint",
 ]
