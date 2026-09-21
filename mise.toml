@@ -22,8 +22,8 @@ run = [
 [tasks.check]
 description = "Run tests and static checks"
 run = [
-  "mise run test",
   "mise run lint",
+  "mise run test",
 ]
 
 [tasks.screenshot]
