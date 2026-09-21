@@ -1,0 +1,4 @@
+# GitHub added this hosted runner after actionlint v1.7.12 was released.
+self-hosted-runner:
+  labels:
+    - ubuntu-26.04
