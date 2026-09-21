@@ -1,5 +1,3 @@
-//go:build !tinygo && gui
-
 package emulator
 
 import (
@@ -81,6 +79,8 @@ func checkGUI() error {
 		return err
 	}
 	g.testUpdate = func(g *game) error {
+		// Keep the golden image independent of the host pointer position.
+		g.hint = defaultHint
 		if draws > 5 {
 			return finished
 		}

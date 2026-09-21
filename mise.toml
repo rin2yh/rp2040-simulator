@@ -26,15 +26,9 @@ run = [
   "mise run lint",
 ]
 
-[tasks.test-gui]
-description = "Run the Ebitengine rendering check"
-env = { GOFLAGS = "-tags=gui" }
-run = "go test ./internal/emulator -count=1"
-
 [tasks.screenshot]
 description = "Capture and verify the emulator UI"
 env = {
-  GOFLAGS = "-tags=gui",
   EMULATOR_SNAPSHOT = "{{config_root}}/build/emulator.png",
 }
 run = [

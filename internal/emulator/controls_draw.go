@@ -12,8 +12,10 @@ import (
 	"github.com/rin2yh/rp2040-simulator/internal/board"
 )
 
+const defaultHint = "Click keys; drag the knob or joystick. Hover a control for help."
+
 func (g *game) updateHint(point image.Point) {
-	g.hint = "Click keys; drag the knob or joystick. Hover a control for help."
+	g.hint = defaultHint
 	hover := false
 	switch {
 	case point.In(g.view.Boot):

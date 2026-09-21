@@ -12,38 +12,13 @@
 - 二つ以上の実装で必要になるまで抽象化を追加しない。
 - READMEは概要、初期セットアップ、基本コマンドに留める。
 
-## Toolchain and tasks
+## Sources of truth
 
-バージョンと定型コマンドは`mise.toml`で管理する。Makefileは追加しない。
-
-- Setup: `mise install`。
-- PC emulator: `mise run run`。
-- テスト: `mise run test`。
-- テストと静的検査: `mise run check`。
-- GUI描画テスト: `mise run test-gui`。
-- TinyGo互換性ビルド: `mise run build-tinygo`。
-- スクリーンショット: `mise run screenshot`。
-- PC build: `mise run build`。
-
-TinyGoの互換性は専用fixtureをビルドして検証する。サンプルをCIのfixtureとして使わない。実機書き込みはユーザーが明示的に依頼した場合だけ行う。
-
-```sh
-mise run build-tinygo
-```
-
-## Structure
-
-```text
-machine/                 TinyGo machine互換の公開package
-driver/ws2812/           PC RPC / TinyGo実ドライバの切り替え
-examples/led-blink/      利用者コードの例
-internal/bridge/         RPC protocolとclient
-internal/board/          ボードprofileとGUI描画
-internal/emulator/       Ebitengine、入力、仮想デバイス、RPC server
-testdata/tinygo/          TinyGo公開APIのbuild-only fixture
-```
-
-ボード追加時は`internal/board/<name>.go`へprofileを追加する。ボードごとのサブディレクトリは作らない。
+- ツールのバージョンと定型コマンドは`mise.toml`を参照する。Makefileは追加しない。
+- CIとリリース設定は`.github/workflows/`、`.tagpr`、`.github/release.yml`、`.github/dependabot.yml`を参照する。
+- packageとディレクトリの構成はソースツリーを参照する。
+- ボードprofileは`internal/board/<name>.go`へ追加し、ボードごとのサブディレクトリは作らない。
+- TinyGo互換性検証では`mise.toml`に指定されたfixtureを使い、`examples/`をfixtureにしない。
 
 ## zero-kb02
 
@@ -67,16 +42,10 @@ ADC中央ずれ、encoderの物理的な回転方向、OLED表示方向は実機
 
 ## Verification
 
-通常は`mise run check`を実行する。GUI / input変更では`mise run test-gui`、公開driver変更では`mise run build-tinygo`も実行する。
+検証コマンドは`mise.toml`を参照する。実機書き込みはユーザーが明示的に依頼した場合だけ行う。
 
 SSD1306 pixel parity、buffer commit、encoder fraction、pointer capture、focus loss、joystick clamp、RESET、RPC LED frame、外部moduleからのimportを維持する。
 
 完成画面は`internal/board/testdata/<board>.png`をgolden imageとして比較する。意図したGUI変更では`UPDATE_BOARD_GOLDEN=1 mise run screenshot`を実行し、`build/emulator.png`を目視確認してからgolden imageを更新する。
 
-## Release
-
-- Git tagをGo moduleのバージョンとして扱い、ソースコード内にバージョン定数を置かない。
-- tagprでSemantic VersioningのtagとGitHub Releaseを作成する。通常はpatch、`tagpr:minor`と`tagpr:major`で更新幅を指定する。
-- 実行バイナリは配布しない。利用者はGo moduleとして取得する。
-- CIはmacOS上のGo test / GUI golden image、Linux上のlint、専用fixtureによるTinyGo互換性を検証する。
-- 依存関係の更新にはDependabotを使う。コンテナを配布しないためTrivyは追加しない。
+Git tagをGo moduleのバージョンとして扱い、ソースコード内にバージョン定数を置かない。実行バイナリやコンテナは配布しない。
