@@ -3,20 +3,26 @@ package simulator
 
 import "fmt"
 
+// Board identifies a board supported by the simulator.
+type Board string
+
+const (
+	BoardZeroKB02      Board = "zero-kb02"
+	BoardConf2025Badge Board = "conf2025badge"
+)
+
 // Config controls the simulator process that is started on the first RPC call.
 type Config struct {
-	Board string
+	Board Board
 }
 
 // Configure sets simulator options. It must be called before using a simulated
-// device. An empty board selects zero-kb02.
+// device.
 func Configure(config Config) error {
-	name := config.Board
-	if name == "" {
-		name = "zero-kb02"
+	switch config.Board {
+	case BoardZeroKB02, BoardConf2025Badge:
+		return configureBoard(string(config.Board))
+	default:
+		return fmt.Errorf("unknown board %q (want %q or %q)", config.Board, BoardZeroKB02, BoardConf2025Badge)
 	}
-	if name != "zero-kb02" && name != "conf2025badge" {
-		return fmt.Errorf("unknown board %q (want zero-kb02 or conf2025badge)", name)
-	}
-	return configureBoard(name)
 }

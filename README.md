@@ -14,10 +14,12 @@ Go moduleをアプリへ追加します。
 go get github.com/rin2yh/rp2040-simulator@latest
 ```
 
-zero-kb02以外を使う場合は、デバイスを使う前に対象ボードを設定します。未指定時はzero-kb02を使用します。
+zero-kb02以外を使う場合は、デバイスを使う前に対象ボードを設定します。`Configure`を呼ばない場合はzero-kb02を使用します。
 
 ```go
-if err := simulator.Configure(simulator.Config{Board: "conf2025badge"}); err != nil {
+if err := simulator.Configure(simulator.Config{
+	Board: simulator.BoardConf2025Badge,
+}); err != nil {
 	log.Fatal(err)
 }
 ```

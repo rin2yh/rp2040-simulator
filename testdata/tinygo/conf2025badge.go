@@ -12,7 +12,7 @@ import (
 )
 
 func main() {
-	if err := simulator.Configure(simulator.Config{Board: "conf2025badge"}); err != nil {
+	if err := simulator.Configure(simulator.Config{Board: simulator.BoardConf2025Badge}); err != nil {
 		panic(err)
 	}
 	speaker, err := buzzer.New(machine.GPIO1)
