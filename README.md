@@ -1,6 +1,6 @@
 # rp2040-simulator
 
-TinyGoアプリを実機へ書き込まずにPCで動かすためのzero-kb02エミュレータです。デスクトップではローカルRPC、TinyGoでは実ドライバへ接続します。
+RP2040ボード向けTinyGoアプリを、実機へ書き込まずにPCで動かすためのエミュレータです。現在はzero-kb02に対応しています。デスクトップではローカルRPC、TinyGoでは実ドライバへ接続します。
 
 ![zero-kb02 emulator](internal/board/testdata/zero-kb02.png)
 
