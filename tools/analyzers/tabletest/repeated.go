@@ -4,10 +4,9 @@ import (
 	"bytes"
 	"go/ast"
 	"go/format"
-	"go/parser"
 	"go/token"
 	"go/types"
-	"path/filepath"
+	"reflect"
 	"slices"
 	"strings"
 
@@ -15,6 +14,7 @@ import (
 )
 
 const repeatedMessage = "repeated test cases can be expressed as a table-driven test"
+const maxStatementGroup = 3
 
 type statementGroup struct {
 	normalized string
@@ -27,7 +27,7 @@ type statementGroup struct {
 
 func runRepeated(pass *analysis.Pass) {
 	for _, file := range pass.Files {
-		if !strings.HasSuffix(filepath.ToSlash(pass.Fset.Position(file.Pos()).Filename), "_test.go") {
+		if !strings.HasSuffix(pass.Fset.Position(file.Pos()).Filename, "_test.go") {
 			continue
 		}
 		for _, decl := range file.Decls {
@@ -46,9 +46,8 @@ func runRepeated(pass *analysis.Pass) {
 }
 
 func reportRepeatedGroups(pass *analysis.Pass, statements []ast.Stmt) {
-	reported := make(map[token.Pos]bool)
 	for start := 0; start < len(statements); start++ {
-		for width := 1; width <= 3 && start+3*width <= len(statements); width++ {
+		for width := 1; width <= maxStatementGroup && start+3*width <= len(statements); width++ {
 			first := describeGroup(pass, statements[start:start+width])
 			if !first.assertion || !first.subject || first.ordered {
 				continue
@@ -64,9 +63,9 @@ func reportRepeatedGroups(pass *analysis.Pass, statements []ast.Stmt) {
 				count++
 				different = different || candidate.original != first.original
 			}
-			if count >= 3 && different && !reported[statements[start].Pos()] {
+			if count >= 3 && different {
 				pass.Reportf(statements[start].Pos(), repeatedMessage)
-				reported[statements[start].Pos()] = true
+				break
 			}
 		}
 	}
@@ -74,7 +73,7 @@ func reportRepeatedGroups(pass *analysis.Pass, statements []ast.Stmt) {
 
 func describeGroup(pass *analysis.Pass, statements []ast.Stmt) statementGroup {
 	group := statementGroup{
-		normalized: normalizedStatements(pass, statements),
+		normalized: structuralStatements(pass.Fset, statements),
 		original:   formattedStatements(pass.Fset, statements),
 		ordered:    hasBareSubjectCall(pass, statements),
 	}
@@ -156,81 +155,19 @@ func isTestingAssertion(obj types.Object) bool {
 	}
 }
 
-func normalizedStatements(pass *analysis.Pass, statements []ast.Stmt) string {
-	type savedArguments struct {
-		call *ast.CallExpr
-		args []ast.Expr
+func structuralStatements(fset *token.FileSet, statements []ast.Stmt) string {
+	filter := func(name string, value reflect.Value) bool {
+		if name == "Name" || name == "Value" || name == "Obj" || name == "Args" {
+			return false
+		}
+		return value.Type() != reflect.TypeFor[token.Pos]()
 	}
-	var saved []savedArguments
+
+	var buf bytes.Buffer
 	for _, statement := range statements {
-		ast.Inspect(statement, func(node ast.Node) bool {
-			call, ok := node.(*ast.CallExpr)
-			if !ok {
-				return true
-			}
-			obj, ok := calledObject(pass, call.Fun).(*types.Func)
-			if !ok || isTestingAssertion(obj) {
-				return true
-			}
-			saved = append(saved, savedArguments{call: call, args: call.Args})
-			call.Args = []ast.Expr{ast.NewIdent("value")}
-			return true
-		})
+		ast.Fprint(&buf, fset, statement, filter)
 	}
-	formatted := formattedStatements(pass.Fset, statements)
-	for _, item := range saved {
-		item.call.Args = item.args
-	}
-
-	source := "package p\nfunc _() {\n" + formatted + "\n}"
-	parsed, err := parser.ParseFile(token.NewFileSet(), "normalized.go", source, 0)
-	if err != nil {
-		return source
-	}
-
-	preserved := make(map[*ast.Ident]bool)
-	ast.Inspect(parsed, func(node ast.Node) bool {
-		switch node := node.(type) {
-		case *ast.SelectorExpr:
-			preserved[node.Sel] = true
-		case *ast.KeyValueExpr:
-			if ident, ok := node.Key.(*ast.Ident); ok {
-				preserved[ident] = true
-			}
-		}
-		return true
-	})
-	ast.Inspect(parsed, func(node ast.Node) bool {
-		switch node := node.(type) {
-		case *ast.Ident:
-			if !preserved[node] {
-				node.Name = "value"
-			}
-		case *ast.BasicLit:
-			node.Value = normalizedLiteral(node.Kind)
-		}
-		return true
-	})
-
-	fn := parsed.Decls[0].(*ast.FuncDecl)
-	return formattedStatements(token.NewFileSet(), fn.Body.List)
-}
-
-func normalizedLiteral(kind token.Token) string {
-	switch kind {
-	case token.INT:
-		return "0"
-	case token.FLOAT:
-		return "0.0"
-	case token.IMAG:
-		return "0i"
-	case token.CHAR:
-		return "'x'"
-	case token.STRING:
-		return `""`
-	default:
-		return "0"
-	}
+	return buf.String()
 }
 
 func formattedStatements(fset *token.FileSet, statements []ast.Stmt) string {
