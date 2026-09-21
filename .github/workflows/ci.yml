@@ -19,37 +19,56 @@ jobs:
     runs-on: ubuntu-26.04
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - &checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c # v4.3.0
+      - &setup-go
+        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
-          install_args: go aqua:rhysd/actionlint
-      - name: Lint
-        run: mise run lint
+          go-version-file: go.mod
+          cache: true
+      - name: Vet
+        run: go vet ./...
+      - name: Run custom analyzers
+        run: |
+          go build -o "$RUNNER_TEMP/vettool" ./tools/vet
+          go vet -vettool="$RUNNER_TEMP/vettool" ./...
+      - name: Check module files
+        run: go mod tidy -diff
+      - name: Lint GitHub Actions workflows
+        run: go run github.com/rhysd/actionlint/cmd/actionlint@v1.7.12
 
   test:
     name: Test
     runs-on: macos-15
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-      - uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c # v4.3.0
-        with:
-          install_args: go
+      - *checkout
+      - *setup-go
       - name: Test
-        run: mise run test
+        run: go test ./...
 
   tinygo:
-    name: TinyGo Build
+    name: TinyGo Build (${{ matrix.name }})
     runs-on: ubuntu-26.04
     timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Waveshare RP2040-Zero
+            target: waveshare-rp2040-zero
+            output: tinygo-check.uf2
+          - name: XIAO RP2040
+            target: xiao-rp2040
+            output: tinygo-conf2025badge-check.uf2
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - *checkout
+      - *setup-go
+      - uses: acifani/setup-tinygo@dd8a7075d951a7595b2ef2123ed0ab1af0c13e56 # v3.0.0
         with:
-          persist-credentials: false
-      - uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c # v4.3.0
-      - name: Build TinyGo compatibility check
-        run: mise run build-tinygo
+          tinygo-version: 0.42.0
+          install-binaryen: false
+      - name: Build
+        run: tinygo build -target=${{ matrix.target }} -o "$RUNNER_TEMP/${{ matrix.output }}" ./testdata/tinygo
