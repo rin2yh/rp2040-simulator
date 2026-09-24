@@ -2,8 +2,6 @@
 
 RP2040ボード向けTinyGoアプリを、実機へ書き込まずにPCで動かすためのエミュレータです。zero-kb02とconf2025badgeに対応しています。デスクトップでは最初のデバイス操作時にエミュレータを自動起動してローカルRPCへ接続し、TinyGoでは実ドライバへ接続します。
 
-![zero-kb02 emulator](internal/board/testdata/zero-kb02.png)
-
 SSD1306 OLED、キーLED、ロータリーエンコーダ、ジョイスティック、BOOT / RESETを画面上で操作できます。RP2040やGPIO / I2C / SPI自体はエミュレートしません。
 
 ## Usage
