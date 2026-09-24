@@ -1,11 +1,16 @@
 // Package emulator implements the zero-kb02 desktop emulator.
 package emulator
 
-import "image/color"
+import (
+	"fmt"
+	"image/color"
+	"sync"
+)
 
 // Display keeps separate draw and presented buffers, just like an OLED.
 // Bits use SSD1306 page order: x + (y/8)*width, bit y%8.
 type Display struct {
+	mu            sync.RWMutex
 	width, height int16
 	buffer, front []byte
 }
@@ -22,6 +27,8 @@ func NewDisplay(width, height int16) *Display {
 func (d *Display) Size() (int16, int16) { return d.width, d.height }
 
 func (d *Display) SetPixel(x, y int16, c color.RGBA) {
+	d.mu.Lock()
+	defer d.mu.Unlock()
 	if x < 0 || y < 0 || x >= d.width || y >= d.height {
 		return
 	}
@@ -34,15 +41,35 @@ func (d *Display) SetPixel(x, y int16, c color.RGBA) {
 	}
 }
 
-func (d *Display) ClearBuffer() { clear(d.buffer) }
+func (d *Display) ClearBuffer() {
+	d.mu.Lock()
+	defer d.mu.Unlock()
+	clear(d.buffer)
+}
 
 func (d *Display) Display() error {
+	d.mu.Lock()
+	defer d.mu.Unlock()
 	copy(d.front, d.buffer)
+	return nil
+}
+
+// WriteFrame atomically replaces the drawing and presented buffers.
+func (d *Display) WriteFrame(pixels []byte) error {
+	d.mu.Lock()
+	defer d.mu.Unlock()
+	if len(pixels) != len(d.buffer) {
+		return fmt.Errorf("display frame has %d bytes, want %d", len(pixels), len(d.buffer))
+	}
+	copy(d.buffer, pixels)
+	copy(d.front, pixels)
 	return nil
 }
 
 // Pixel reads the presented frame, never the uncommitted drawing buffer.
 func (d *Display) Pixel(x, y int16) bool {
+	d.mu.RLock()
+	defer d.mu.RUnlock()
 	if x < 0 || y < 0 || x >= d.width || y >= d.height {
 		return false
 	}

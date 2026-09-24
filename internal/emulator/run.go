@@ -9,6 +9,7 @@ import (
 	"image"
 	"image/color"
 	"math"
+	"sync"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
@@ -17,6 +18,8 @@ import (
 )
 
 type game struct {
+	mu                    sync.RWMutex
+	generation            uint64
 	profile               board.Profile
 	view                  board.View
 	display               *Display
@@ -45,7 +48,7 @@ func Run(profile board.Profile) error {
 }
 
 func run(g *game) error {
-	listener, err := startRPC(g.leds, g.buzzer)
+	listener, err := startRPC(g)
 	if err != nil {
 		return fmt.Errorf("start emulator RPC server: %w", err)
 	}
@@ -91,6 +94,9 @@ func newGame(profile board.Profile) (*game, error) {
 }
 
 func (g *game) restart(bootloader bool) error {
+	g.mu.Lock()
+	defer g.mu.Unlock()
+	g.generation++
 	g.buzzer.reset(bootloader)
 	g.bootloader, g.bootArmed, g.zoom = bootloader, false, false
 	g.encoder = Encoder{}
@@ -161,6 +167,8 @@ func (g *game) Update() error {
 
 // Merge pointer and keyboard state after handling reset, focus and zoom.
 func (g *game) updateDevices(enabled bool) {
+	g.mu.Lock()
+	defer g.mu.Unlock()
 	g.encoder.Rotate(g.pointer.Delta)
 	g.encoder.SetPressed(g.pointer.EncoderDown || (enabled && (ebiten.IsKeyPressed(ebiten.KeySpace) || ebiten.IsKeyPressed(ebiten.KeyEnter))))
 	for i, key := range g.view.Keys {
@@ -193,6 +201,8 @@ func (g *game) updateDevices(enabled bool) {
 }
 
 func (g *game) Draw(screen *ebiten.Image) {
+	g.mu.RLock()
+	defer g.mu.RUnlock()
 	g.view.DrawBody(screen)
 	g.drawInputs(screen)
 	w, h := int(g.profile.DisplayWidth), int(g.profile.DisplayHeight)

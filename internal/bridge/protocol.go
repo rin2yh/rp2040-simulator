@@ -17,3 +17,19 @@ type WriteLEDsArgs struct {
 type BuzzerArgs struct {
 	Frequency uint32
 }
+
+// Inputs is a snapshot of zero-kb02 controls. Position is cumulative so a
+// client can calculate detents without consuming another client's events.
+type Inputs struct {
+	Keys                 [12]bool
+	EncoderPosition      int
+	EncoderPressed       bool
+	JoystickX, JoystickY float32
+	JoystickPressed      bool
+	Generation           uint64
+}
+
+type DisplayFrame struct {
+	// Pixels are packed in SSD1306 page order (128 columns by 8 pages).
+	Pixels []byte
+}

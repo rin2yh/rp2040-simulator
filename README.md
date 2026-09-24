@@ -22,7 +22,7 @@ if err := simulator.Configure(simulator.Config{
 }
 ```
 
-PCとTinyGoで共通に使えるpackageと最小構成のアプリは、[LED blink example](examples/led-blink)を参照してください。
+PCとTinyGoで共通に使えるpackageと最小構成のアプリは、[LED blink example](examples/led-blink)を参照してください。zero-kb02のキー、エンコーダー、ジョイスティック、OLEDとLEDを確認するには、[zero-kb02 example](examples/zero-kb02)を実行します。
 
 ## Development
 
