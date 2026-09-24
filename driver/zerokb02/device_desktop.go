@@ -17,10 +17,10 @@ func (d *Device) Read() (State, error) {
 	}
 	state := State{Keys: snapshot.Keys, EncoderPressed: snapshot.EncoderPressed,
 		JoystickX: snapshot.JoystickX, JoystickY: snapshot.JoystickY, JoystickPressed: snapshot.JoystickPressed}
-	if !d.initialized || d.generation == snapshot.Generation {
+	if d.generation == 0 || d.generation == snapshot.Generation {
 		state.EncoderDelta = snapshot.EncoderPosition - d.position
 	}
-	d.position, d.generation, d.initialized = snapshot.EncoderPosition, snapshot.Generation, true
+	d.position, d.generation = snapshot.EncoderPosition, snapshot.Generation
 	return state, nil
 }
 

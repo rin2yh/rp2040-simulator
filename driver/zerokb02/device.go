@@ -2,7 +2,11 @@
 // LED output uses the existing driver/ws2812 package with machine.GPIO1.
 package zerokb02
 
-import "image/color"
+import (
+	"image/color"
+
+	"github.com/rin2yh/rp2040-simulator/internal/bounds"
+)
 
 const Width, Height = 128, 64
 
@@ -16,15 +20,14 @@ type State struct {
 
 // Device owns one control reader and one OLED framebuffer.
 type Device struct {
-	frame       [Width * Height / 8]byte
-	position    int
-	generation  uint64
-	initialized bool
-	hardware    hardware
+	frame      [Width * Height / 8]byte
+	position   int
+	generation uint64
+	hardware   hardware
 }
 
 func (d *Device) SetPixel(x, y int16, c color.RGBA) {
-	if x < 0 || x >= Width || y < 0 || y >= Height {
+	if !bounds.Between(x, 0, Width) || !bounds.Between(y, 0, Height) {
 		return
 	}
 	i, bit := int(x)+int(y/8)*Width, byte(1<<uint(y%8))

@@ -201,8 +201,6 @@ func (g *game) updateDevices(enabled bool) {
 }
 
 func (g *game) Draw(screen *ebiten.Image) {
-	g.mu.RLock()
-	defer g.mu.RUnlock()
 	g.view.DrawBody(screen)
 	g.drawInputs(screen)
 	w, h := int(g.profile.DisplayWidth), int(g.profile.DisplayHeight)

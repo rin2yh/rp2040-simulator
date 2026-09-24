@@ -29,9 +29,7 @@ func main() {
 			if pressed {
 				colors[i] = color.RGBA{G: 80}
 				for x := int16(i * 10); x < int16(i*10+8); x++ {
-					for y := int16(4); y < 12; y++ {
-						device.SetPixel(x, y, color.RGBA{R: 255})
-					}
+					device.SetPixel(x, 8, color.RGBA{R: 255})
 				}
 			} else {
 				colors[i] = color.RGBA{}

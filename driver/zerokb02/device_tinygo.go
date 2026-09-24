@@ -3,7 +3,6 @@
 package zerokb02
 
 import (
-	"image/color"
 	"machine"
 	"runtime/interrupt"
 	"time"
@@ -121,13 +120,8 @@ func (d *Device) Read() (State, error) {
 
 func (d *Device) Display() error {
 	h := d.hardware.display
-	h.ClearBuffer()
-	for y := int16(0); y < Height; y++ {
-		for x := int16(0); x < Width; x++ {
-			if d.frame[int(x)+int(y/8)*Width]&(1<<uint(y%8)) != 0 {
-				h.SetPixel(x, y, color.RGBA{R: 255})
-			}
-		}
+	if err := h.SetBuffer(d.frame[:]); err != nil {
+		return err
 	}
 	return h.Display()
 }

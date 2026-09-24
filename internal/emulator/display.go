@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"image/color"
 	"sync"
+
+	"github.com/rin2yh/rp2040-simulator/internal/bounds"
 )
 
 // Display keeps separate draw and presented buffers, just like an OLED.
@@ -29,7 +31,7 @@ func (d *Display) Size() (int16, int16) { return d.width, d.height }
 func (d *Display) SetPixel(x, y int16, c color.RGBA) {
 	d.mu.Lock()
 	defer d.mu.Unlock()
-	if x < 0 || y < 0 || x >= d.width || y >= d.height {
+	if !bounds.Between(x, 0, d.width) || !bounds.Between(y, 0, d.height) {
 		return
 	}
 	i := int(x) + int(y/8)*int(d.width)
@@ -70,7 +72,7 @@ func (d *Display) WriteFrame(pixels []byte) error {
 func (d *Display) Pixel(x, y int16) bool {
 	d.mu.RLock()
 	defer d.mu.RUnlock()
-	if x < 0 || y < 0 || x >= d.width || y >= d.height {
+	if !bounds.Between(x, 0, d.width) || !bounds.Between(y, 0, d.height) {
 		return false
 	}
 	return d.front[int(x)+int(y/8)*int(d.width)]&(1<<uint(y%8)) != 0
