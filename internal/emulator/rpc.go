@@ -4,7 +4,6 @@ package emulator
 
 import (
 	"errors"
-	"fmt"
 	"net"
 	"net/rpc"
 
@@ -48,13 +47,7 @@ func (s *ledService) WriteColors(args *bridge.WriteLEDsArgs, _ *struct{}) error 
 	if s.leds == nil {
 		return errors.New("board has no LEDs")
 	}
-	if len(args.Colors) != s.leds.Len() {
-		return fmt.Errorf("got %d LED colors, want %d", len(args.Colors), s.leds.Len())
-	}
-	for i, c := range args.Colors {
-		s.leds.Set(i, c)
-	}
-	return s.leds.Display()
+	return s.leds.WriteColors(args.Colors)
 }
 
 func startRPC(g *game) (net.Listener, error) {
