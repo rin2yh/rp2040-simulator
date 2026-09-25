@@ -1,5 +1,9 @@
 # Changelog
 
+## [v0.2.1](https://github.com/rin2yh/rp2040-simulator/compare/v0.2.0...v0.2.1) - 2026-09-25
+
+- feat: zero-kb02 の入力と OLED をデスクトップから利用可能にする by @rin2yh in https://github.com/rin2yh/rp2040-simulator/pull/14
+
 ## [v0.2.0](https://github.com/rin2yh/rp2040-simulator/compare/v0.1.0...v0.2.0) - 2026-09-24
 
 - Bump jdx/mise-action from 4.2.3 to 4.3.0 by @dependabot[bot] in https://github.com/rin2yh/rp2040-simulator/pull/1
