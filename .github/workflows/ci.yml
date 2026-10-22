@@ -68,7 +68,7 @@ jobs:
       - *setup-go
       - uses: acifani/setup-tinygo@dd8a7075d951a7595b2ef2123ed0ab1af0c13e56 # v3.0.0
         with:
-          tinygo-version: 0.42.0
+          tinygo-version: 0.43.0
           install-binaryen: false
       - name: Build
         run: tinygo build -target=${{ matrix.target }} -o "$RUNNER_TEMP/${{ matrix.output }}" ./testdata/tinygo

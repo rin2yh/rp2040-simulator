@@ -1,6 +1,6 @@
 [tools]
-go = "1.27.1"
-"aqua:tinygo-org/tinygo" = "0.42.0"
+go = "1.27.3"
+"aqua:tinygo-org/tinygo" = "0.43.0"
 "aqua:rhysd/actionlint" = "1.7.12"
 
 [tasks.test]

@@ -1,6 +1,6 @@
 module github.com/rin2yh/rp2040-simulator
 
-go 1.27.1
+go 1.27.3
 
 require (
 	github.com/hajimehoshi/ebiten/v2 v2.10.2
