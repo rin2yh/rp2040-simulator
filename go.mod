@@ -6,7 +6,7 @@ require (
 	github.com/hajimehoshi/ebiten/v2 v2.10.5
 	golang.org/x/image v0.46.0
 	golang.org/x/tools v0.50.0
-	tinygo.org/x/drivers v0.36.0
+	tinygo.org/x/drivers v0.37.0
 )
 
 require (
